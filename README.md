@@ -65,7 +65,7 @@ The dashboard presents key portfolio performance and risk indicators, including 
 
 The current dashboard reports the following results for the portfolio's historical sample:
 
-> **Note:** the figures and screenshots in this section were calculated before the EUR conversion (local-currency returns and a 2.25% risk-free rate). They will be updated after the notebooks are re-run with EUR-based data.
+> **Note:** the figures and screenshots in this section were calculated before the EUR conversion, the €STR-based risk-free rate and the S&P 500 Total Return benchmark were introduced. They will be updated after the notebooks are re-run with EUR-based data.
 
 | Metric | Result |
 |---|---:|
