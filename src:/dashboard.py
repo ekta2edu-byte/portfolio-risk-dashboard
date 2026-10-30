@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import yfinance as yf
 import plotly.graph_objects as go
 
 
@@ -18,7 +17,8 @@ st.set_page_config(
 st.title("Portfolio Risk & Performance Dashboard")
 st.caption(
     "Analysis of portfolio performance, market risk, stress testing "
-    "and benchmark performance."
+    "and benchmark performance. All figures are in EUR, from the "
+    "perspective of an unhedged euro-based investor."
 )
 
 
@@ -74,8 +74,11 @@ annual_volatility = (
     portfolio_returns.std() * np.sqrt(252)
 )
 
-# Risk-free rate
-risk_free_rate = 0.0225
+# Risk-free rate: €STR (euro short-term rate), constant full-period
+# approximation. 1.05% = simple average of the annual €STR averages
+# for 2019-2025. €STR started on 2 October 2019, so the 2019 figure
+# covers October-December only.
+risk_free_rate = 0.0105
 
 # Sharpe ratio
 sharpe_ratio = (
@@ -241,29 +244,27 @@ pre_covid_volatility = (
 
 
 # ============================================================
-# 9. S&P 500 BENCHMARK
+# 9. S&P 500 TOTAL RETURN BENCHMARK (EUR)
 # ============================================================
 
-benchmark_data = yf.download(
-    "^GSPC",
-    start="2019-01-01",
-    end="2026-01-01",
-    auto_adjust=False,
-    progress=False
+# S&P 500 Total Return index (dividends reinvested), converted to EUR
+# in Notebook 1 with the same exchange rate and dates as the portfolio
+BENCHMARK_PATH = BASE_DIR / "data" / "sp500tr_eur.csv"
+
+if not BENCHMARK_PATH.exists():
+    st.error(
+        "Benchmark file data/sp500tr_eur.csv not found. "
+        "Run notebooks/01_Download_Data.ipynb first."
+    )
+    st.stop()
+
+benchmark_data = pd.read_csv(
+    BENCHMARK_PATH,
+    index_col=0,
+    parse_dates=True
 )
 
-# Handle yfinance MultiIndex / normal columns
-if isinstance(benchmark_data.columns, pd.MultiIndex):
-    if ("Close", "^GSPC") in benchmark_data.columns:
-        benchmark_prices = benchmark_data[
-            ("Close", "^GSPC")
-        ]
-    else:
-        benchmark_prices = benchmark_data["Close"].iloc[:, 0]
-else:
-    benchmark_prices = benchmark_data["Close"]
-
-benchmark_prices = benchmark_prices.dropna()
+benchmark_prices = benchmark_data["SP500TR_EUR"].sort_index().dropna()
 
 benchmark_returns = (
     benchmark_prices
@@ -618,7 +619,7 @@ col1.metric(
 # 23. PORTFOLIO VS S&P 500
 # ============================================================
 
-st.subheader("Portfolio vs S&P 500 Price Index")
+st.subheader("Portfolio vs S&P 500 Total Return (EUR)")
 
 fig_benchmark = go.Figure()
 
