@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import yfinance as yf
 import plotly.graph_objects as go
 
 
@@ -18,8 +17,14 @@ st.set_page_config(
 st.title("Portfolio Risk & Performance Dashboard")
 st.caption(
     "Analysis of portfolio performance, market risk, stress testing "
-    "and benchmark performance."
+    "and benchmark performance for an equal-weight portfolio of nine "
+    "EUR-denominated eurozone equities, from the perspective of an "
+    "unhedged euro-based investor. All figures are in EUR."
 )
+
+# Benchmark: Xtrackers EURO STOXX 50 UCITS ETF 1C (XESC.DE),
+# an accumulating EUR fund tracking the EURO STOXX 50 Net Return index
+BENCHMARK_NAME = "EURO STOXX 50"
 
 
 # ============================================================
@@ -30,6 +35,16 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_PATH = BASE_DIR / "data" / "adj_close.csv"
+BENCHMARK_PATH = BASE_DIR / "data" / "benchmark.csv"
+
+# Both data files are created by notebooks/01_Download_Data.ipynb
+for path in [DATA_PATH, BENCHMARK_PATH]:
+    if not path.exists():
+        st.error(
+            f"Data file data/{path.name} not found. "
+            "Run notebooks/01_Download_Data.ipynb first."
+        )
+        st.stop()
 
 prices = pd.read_csv(
     DATA_PATH,
@@ -74,8 +89,11 @@ annual_volatility = (
     portfolio_returns.std() * np.sqrt(252)
 )
 
-# Risk-free rate
-risk_free_rate = 0.0225
+# Risk-free rate: €STR (euro short-term rate), constant full-period
+# approximation. 1.05% = simple average of the annual €STR averages
+# for 2019-2025. €STR started on 2 October 2019, so the 2019 figure
+# covers October-December only.
+risk_free_rate = 0.0105
 
 # Sharpe ratio
 sharpe_ratio = (
@@ -241,29 +259,17 @@ pre_covid_volatility = (
 
 
 # ============================================================
-# 9. S&P 500 BENCHMARK
+# 9. EURO STOXX 50 BENCHMARK
 # ============================================================
 
-benchmark_data = yf.download(
-    "^GSPC",
-    start="2019-01-01",
-    end="2026-01-01",
-    auto_adjust=False,
-    progress=False
+# Benchmark prices in EUR, aligned with the portfolio dates in Notebook 1
+benchmark_data = pd.read_csv(
+    BENCHMARK_PATH,
+    index_col=0,
+    parse_dates=True
 )
 
-# Handle yfinance MultiIndex / normal columns
-if isinstance(benchmark_data.columns, pd.MultiIndex):
-    if ("Close", "^GSPC") in benchmark_data.columns:
-        benchmark_prices = benchmark_data[
-            ("Close", "^GSPC")
-        ]
-    else:
-        benchmark_prices = benchmark_data["Close"].iloc[:, 0]
-else:
-    benchmark_prices = benchmark_data["Close"]
-
-benchmark_prices = benchmark_prices.dropna()
+benchmark_prices = benchmark_data.iloc[:, 0].sort_index().dropna()
 
 benchmark_returns = (
     benchmark_prices
@@ -271,7 +277,7 @@ benchmark_returns = (
     .dropna()
 )
 
-benchmark_returns.name = "S&P 500"
+benchmark_returns.name = BENCHMARK_NAME
 
 
 # ============================================================
@@ -289,7 +295,7 @@ comparison = pd.concat(
 
 comparison.columns = [
     "Portfolio",
-    "S&P 500"
+    BENCHMARK_NAME
 ]
 
 
@@ -298,12 +304,12 @@ comparison.columns = [
 # ============================================================
 
 beta = (
-    comparison["Portfolio"].cov(comparison["S&P 500"])
-    / comparison["S&P 500"].var()
+    comparison["Portfolio"].cov(comparison[BENCHMARK_NAME])
+    / comparison[BENCHMARK_NAME].var()
 )
 
 # ============================================================
-# 12. NORMALIZED PORTFOLIO VS S&P 500 GROWTH
+# 12. NORMALIZED PORTFOLIO VS BENCHMARK GROWTH
 # ============================================================
 
 growth = (
@@ -607,7 +613,7 @@ st.header("Benchmark Analysis")
 col1, col2 = st.columns(2)
 
 col1.metric(
-    "Portfolio Beta vs S&P 500",
+    f"Portfolio Beta vs {BENCHMARK_NAME}",
     f"{beta:.2f}"
 )
 
@@ -615,10 +621,10 @@ col1.metric(
 
 
 # ============================================================
-# 23. PORTFOLIO VS S&P 500
+# 23. PORTFOLIO VS BENCHMARK
 # ============================================================
 
-st.subheader("Portfolio vs S&P 500 Price Index")
+st.subheader(f"Portfolio vs {BENCHMARK_NAME} (Net Return, EUR)")
 
 fig_benchmark = go.Figure()
 
@@ -634,9 +640,9 @@ fig_benchmark.add_trace(
 fig_benchmark.add_trace(
     go.Scatter(
         x=growth.index,
-        y=growth["S&P 500"],
+        y=growth[BENCHMARK_NAME],
         mode="lines",
-        name="S&P 500"
+        name=BENCHMARK_NAME
     )
 )
 
@@ -709,5 +715,5 @@ st.divider()
 
 st.caption(
     "Portfolio Risk & Performance Dashboard | "
-    "Historical market data | Equal-weight portfolio"
+    "Historical market data | Equal-weight portfolio | EUR"
 )
