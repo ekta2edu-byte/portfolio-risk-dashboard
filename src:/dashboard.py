@@ -23,8 +23,9 @@ st.caption(
 )
 
 # Benchmark: Xtrackers EURO STOXX 50 UCITS ETF 1C (XESC.DE),
-# an accumulating EUR fund tracking the EURO STOXX 50 Net Return index
-BENCHMARK_NAME = "EURO STOXX 50"
+# an accumulating EUR fund tracking the EURO STOXX 50 Net Return index.
+# Its return is net of the 0.09% fund fee, so it is a proxy for the index.
+BENCHMARK_NAME = "EURO STOXX 50 ETF (net return proxy, EUR)"
 
 
 # ============================================================
@@ -92,7 +93,8 @@ annual_volatility = (
 # Risk-free rate: €STR (euro short-term rate), constant full-period
 # approximation. 1.05% = simple average of the annual €STR averages
 # for 2019-2025. €STR started on 2 October 2019, so the 2019 figure
-# covers October-December only.
+# covers October-December only; a full-year pre-€STR estimate
+# gives about 1.06%, which changes the Sharpe ratio by less than 0.001.
 risk_free_rate = 0.0105
 
 # Sharpe ratio
@@ -613,7 +615,7 @@ st.header("Benchmark Analysis")
 col1, col2 = st.columns(2)
 
 col1.metric(
-    f"Portfolio Beta vs {BENCHMARK_NAME}",
+    "Portfolio Beta vs Benchmark",
     f"{beta:.2f}"
 )
 
@@ -624,7 +626,7 @@ col1.metric(
 # 23. PORTFOLIO VS BENCHMARK
 # ============================================================
 
-st.subheader(f"Portfolio vs {BENCHMARK_NAME} (Net Return, EUR)")
+st.subheader(f"Portfolio vs {BENCHMARK_NAME}")
 
 fig_benchmark = go.Figure()
 

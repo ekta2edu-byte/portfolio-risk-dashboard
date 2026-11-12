@@ -54,7 +54,7 @@ The portfolio is analysed from the perspective of an **unhedged euro-based inves
 - Comparison with pre-COVID volatility
 
 ### Benchmark Analysis
-- Comparison against the EURO STOXX 50 (Net Return, EUR)
+- Comparison against the EURO STOXX 50 ETF (net return proxy, EUR)
 - Portfolio beta
 - Cumulative growth comparison
 - Relative historical performance
@@ -98,17 +98,17 @@ The 95% historical VaR backtest counts the days on which the portfolio's return 
 
 ## 5. Methodology
 
-- **Data.** Daily adjusted closing prices from Yahoo Finance (`yfinance`), 2 January 2019 to 30 December 2025. Adjusted prices reflect dividends (reinvested gross of withholding tax on the ex-dividend date) and stock splits. Notebook 1 checks that every ticker is traded in EUR, covers the whole period, and lists each stock's largest daily moves so they can be checked against known events (such as the Siemens Energy spin-off in September 2020).
+- **Data.** Daily adjusted closing prices from Yahoo Finance (`yfinance`), 2 January 2019 to 30 December 2025. Adjusted prices reflect dividends (reinvested gross of withholding tax on the ex-dividend date) and stock splits. Notebook 1 checks that every ticker is traded in EUR, covers the whole period and has no run of more than five consecutive missing prices (normal exchange holidays create gaps of one or two days). It also validates the benchmark (Adjusted Close versus Close, and calendar-year returns versus published fund returns) and lists the largest daily moves of each stock and of the benchmark, so genuine market or company events (such as the Siemens Energy spin-off in September 2020) can be distinguished from data errors.
 - **Base currency.** EUR. All holdings and the benchmark are priced in EUR, so no currency conversion is applied and returns have no exchange-rate component.
 - **Dates and missing values.** The dates are the union of the trading days of Euronext Paris, Euronext Amsterdam and Xetra. A missing price on an exchange holiday is filled with the previous day's price. The benchmark is aligned to exactly the same dates and filled in the same way. Prices are never filled backwards, to avoid look-ahead bias.
 - The portfolio is constructed using equal weights across the nine holdings, applied to each day's returns (the portfolio is rebalanced to equal weights daily, with no transaction costs).
 - Annualized return is the mean daily return × 252; annualized volatility is the daily standard deviation × √252.
-- **Risk-free rate.** The Sharpe ratio uses a constant risk-free rate of 1.05% per year: a full-period approximation equal to the simple average of the annual €STR (euro short-term rate) averages for 2019–2025. €STR began on 2 October 2019, so the 2019 figure covers October–December only. Sharpe ratio = (annualized return − 1.05%) ÷ annualized volatility, which is equivalent to subtracting 1.05% ÷ 252 from every daily return.
-- **Benchmark.** The Xtrackers EURO STOXX 50 UCITS ETF 1C (`XESC.DE`, Xetra, EUR), an accumulating fund that tracks the EURO STOXX 50 Net Return index. It is used as an investable proxy for the index. All nine holdings are members of the EURO STOXX 50.
+- **Risk-free rate.** The Sharpe ratio uses a constant risk-free rate of 1.05% per year: a full-period approximation equal to the simple average of the annual €STR (euro short-term rate) averages for 2019–2025. €STR began on 2 October 2019, so the 2019 figure covers only October–December but counts as a full year in the average. Using the ECB's pre-€STR for January–September 2019 (estimated as EONIA minus the 8.5 basis-point spread published by the ECB) gives approximately 1.06% instead; the difference changes the Sharpe ratio by less than 0.001, so 1.05% is kept. Sharpe ratio = (annualized return − 1.05%) ÷ annualized volatility, which is equivalent to subtracting 1.05% ÷ 252 from every daily return.
+- **Benchmark.** The Xtrackers EURO STOXX 50 UCITS ETF 1C (`XESC.DE`, Xetra, EUR), an accumulating fund that tracks the EURO STOXX 50 Net Return index. It is used as an investable proxy for the index and labelled "EURO STOXX 50 ETF (net return proxy, EUR)". All nine holdings are members of the EURO STOXX 50.
 - Historical VaR estimates the loss threshold at the 95% confidence level; CVaR estimates the average loss beyond that threshold.
 - VaR backtesting compares observed portfolio losses against the estimated VaR threshold.
 - Component Contribution to Risk measures each holding's contribution to total portfolio volatility.
-- Beta measures the portfolio's historical sensitivity to EURO STOXX 50 returns over aligned observations.
+- Beta measures the portfolio's historical sensitivity to the benchmark's returns over aligned observations.
 
 ## 6. Technology Stack
 
@@ -126,7 +126,7 @@ The 95% historical VaR backtest counts the days on which the portfolio's return 
 Portfolio_Risk_Dashboard/
 ├── data/
 │   ├── adj_close.csv      # stock prices in EUR (created by Notebook 1)
-│   └── benchmark.csv      # EURO STOXX 50 benchmark prices in EUR (created by Notebook 1)
+│   └── benchmark.csv      # EURO STOXX 50 ETF benchmark prices in EUR (created by Notebook 1)
 ├── images/
 ├── notebooks/
 │   ├── 01_Download_Data.ipynb
@@ -161,9 +161,14 @@ Keep the terminal session running while using the dashboard.
 - The analysis is based on historical market data; past performance does not predict future results.
 - Historical VaR and CVaR depend on the selected sample and may not capture all extreme market events.
 - The portfolio uses equal weights, and results depend on the portfolio construction and rebalancing assumptions implemented in the code.
-- Benchmark: the benchmark is an ETF, so its return is reduced by its 0.09% annual fee and may differ slightly from the index itself. It follows the **net** return index, in which dividends are reinvested after withholding tax, whereas the stocks' adjusted prices reinvest dividends **gross**. The portfolio's relative performance is therefore slightly flattered, by roughly the withholding tax on the benchmark's dividends.
+- Benchmark fee and tracking difference: the benchmark is an ETF, not the index itself.
+  - **Fee.** The fund charges 0.09% a year, deducted gradually from its value, so its return is lower than the index's by about that amount.
+  - **Tracking difference.** The fund's return minus the index's return. Besides the fee, it reflects the withholding tax the fund actually pays on dividends, income from lending its shares, and trading costs, so it can be larger or smaller than the fee and varies from year to year.
+  - **Gross versus net dividends.** The fund follows the **net** return index (dividends reinvested after withholding tax), whereas the stocks' adjusted prices reinvest dividends **gross**. Together with the fee, this means the benchmark's return is held back relative to the stocks, which slightly flatters the portfolio's relative performance. The size of this gap has not been measured in this project; it is plausibly in the region of half a percentage point a year, but this is an estimate, not an exact figure.
+  - Volatility, correlation and beta are essentially unaffected, because a small, steady drag barely changes day-to-day return movements.
+  - Yahoo Finance uses the fund's Xetra closing price, which can differ slightly from its official net asset value.
 - Concentration: the portfolio holds nine stocks from three countries (France, Germany, the Netherlands), so its results are specific to these companies and to the eurozone large-cap market.
-- Risk-free rate: the constant 1.05% is a full-period approximation of €STR, whose annual average ranged from about −0.57% to 3.64% over 2019–2025.
+- Risk-free rate: the constant 1.05% is a full-period approximation of €STR, whose annual average ranged from about −0.57% to 3.64% over 2019–2025. The 2019 observation period is incomplete (October–December only); a full-year pre-€STR estimate gives approximately 1.06%.
 
 ## 10. Disclaimer
 
