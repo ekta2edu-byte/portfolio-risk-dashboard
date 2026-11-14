@@ -169,6 +169,7 @@ Keep the terminal session running while using the dashboard.
   - Yahoo Finance uses the fund's Xetra closing price, which can differ slightly from its official net asset value.
 - Concentration: the portfolio holds nine stocks from three countries (France, Germany, the Netherlands), so its results are specific to these companies and to the eurozone large-cap market.
 - Risk-free rate: the constant 1.05% is a full-period approximation of €STR, whose annual average ranged from about −0.57% to 3.64% over 2019–2025. The 2019 observation period is incomplete (October–December only); a full-year pre-€STR estimate gives approximately 1.06%.
+- **Benchmark data-quality note:** We identified three consecutive unchanged-price observations for the EURO STOXX 50 ETF proxy (XESC.DE) on 4–6 December 2023 in the Yahoo Finance historical data. These observations have not been independently verified, so it is not yet known whether they reflect genuine market prices or stale data. They were retained in the main dataset pending verification and may affect benchmark volatility, correlation and beta estimates.
 
 ## 10. Disclaimer
 
