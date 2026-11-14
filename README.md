@@ -63,22 +63,28 @@ The portfolio is analysed from the perspective of an **unhedged euro-based inves
 
 The dashboard presents key portfolio performance and risk indicators, including annualized return, annualized volatility, Sharpe ratio, maximum drawdown, historical VaR, CVaR, and supporting visualizations.
 
-The dashboard reports the following results for the portfolio's historical sample (2 January 2019 to 30 December 2025):
-
-> **Note:** the results below and the dashboard screenshots will be updated after the notebooks have been run on the new EUR-denominated European portfolio. The screenshots currently show the previous version of the portfolio.
+The dashboard reports the following results for the portfolio's historical sample (2 January 2019 to 30 December 2025). The figures are calculated from the committed data files in `data/` and match Notebooks 2 and 3.
 
 | Metric | Result |
 |---|---:|
-| Annualized return | To be updated |
-| Annualized volatility | To be updated |
-| Sharpe ratio | To be updated |
-| Maximum drawdown | To be updated |
-| 95% Historical VaR (1-day) | To be updated |
-| 95% CVaR / Expected Shortfall | To be updated |
+| Annualized mean return (arithmetic: mean daily return × 252; not CAGR) | 19.52% |
+| Annualized volatility | 21.08% |
+| Sharpe ratio | 0.88 |
+| Maximum drawdown | −39.28% |
+| Portfolio growth of €1 | €3.38 |
+| 95% Historical VaR (1-day) | 1.85% loss |
+| 95% CVaR / Expected Shortfall (1-day) | 3.14% loss |
+| 95% VaR exceptions | 89 (5.01% of days) |
+| Portfolio beta vs EURO STOXX 50 ETF (net return proxy, EUR) | 1.05 |
+| Benchmark growth of €1: EURO STOXX 50 ETF (net return proxy, EUR) | €2.36 |
+
+**VaR and CVaR sign convention.** Notebook 3 reports VaR and CVaR as returns, so losses appear as negative numbers (−1.85% and −3.14%). The dashboard and the table above show the same values as positive loss amounts (1.85% and 3.14%). The meaning is identical.
+
+**Benchmark comparison.** The portfolio's higher growth than the benchmark should be read together with the limitations in section 9: the stocks' adjusted prices reinvest dividends gross while the benchmark ETF follows a net return index and deducts its fee, the holdings were selected retrospectively, and the portfolio's beta of 1.05 means it carried more market risk than the benchmark.
 
 ### VaR Backtesting
 
-The 95% historical VaR backtest counts the days on which the portfolio's return was worse than the VaR threshold and compares this exception rate with the expected rate of 5%. Because the threshold is estimated from the same sample (an in-sample test), the exception rate is close to 5% by construction; it does not, by itself, establish that the VaR model is reliable under all market conditions.
+The 95% historical VaR backtest counts the days on which the portfolio's return was at or below the VaR threshold and compares this exception rate with the expected rate of 5%. Over the sample, there were **89 exceptions out of 1,777 daily returns (5.01%)**, against an expected 5.00%. Because the threshold is estimated from the same sample (an in-sample test), the exception rate is close to 5% by construction; it does not, by itself, establish that the VaR model is reliable under all market conditions. A formal out-of-sample backtest would estimate each day's VaR using only data available before that day.
 
 *These are historical sample results, not forecasts or guarantees of future performance.*
 
@@ -91,7 +97,7 @@ The 95% historical VaR backtest counts the days on which the portfolio's return 
 ![VaR Backtesting and Risk Contribution](images/var_backtest_risk_contribution.png)
 
 #### 3. COVID-19 Stress Testing
-![COVID-19 Stress Test](images/covid_stress_test.png)
+![COVID-19 Stress Testing](images/covid_stress_test.png)
 
 #### 4. Benchmark Analysis
 ![Benchmark Analysis](images/benchmark_analysis.png)
@@ -103,7 +109,7 @@ The 95% historical VaR backtest counts the days on which the portfolio's return 
 - **Dates and missing values.** The stocks and the benchmark are kept on their **common trading dates**: only dates on which all nine stocks and the benchmark have a price are used. Dates on which one exchange was closed (for example Xetra on 24 and 31 December) are removed, so the next daily return covers two days. No missing price is filled or estimated.
 - The portfolio is constructed using equal weights across the nine holdings, applied to each day's returns (the portfolio is rebalanced to equal weights daily, with no transaction costs).
 - Annualized return is the mean daily return × 252; annualized volatility is the daily standard deviation × √252.
-- **Risk-free rate.** The Sharpe ratio uses a constant risk-free rate of 1.05% per year: a full-period approximation equal to the simple average of the annual €STR (euro short-term rate) averages for 2019–2025. €STR began on 2 October 2019, so the 2019 figure covers only October–December but counts as a full year in the average. Using the ECB's pre-€STR for January–September 2019 (estimated as EONIA minus the 8.5 basis-point spread published by the ECB) gives approximately 1.06% instead; the difference changes the Sharpe ratio by less than 0.001, so 1.05% is kept. Sharpe ratio = (annualized return − 1.05%) ÷ annualized volatility, which is equivalent to subtracting 1.05% ÷ 252 from every daily return.
+- **Risk-free rate.** The Sharpe ratio uses a constant risk-free rate of 1.05% per year: a full-period approximation equal to the simple average of the annual €STR (euro short-term rate) averages for 2019–2025. €STR began on 2 October 2019, so the 2019 figure covers only October–December but counts as a full year in the average. Using the ECB's pre-€STR for January–September 2019 (estimated as EONIA minus the 8.5 basis-point spread published by the ECB) gives approximately 1.06% instead; the difference changes the Sharpe ratio by less than 0.001, so 1.05% is kept. Sharpe ratio = (annualized return − 1.05%) ÷ annualized volatility, which is equivalent to subtracting 1.05% ÷ 252 from every daily return. The €STR (including the pre-€STR) is published by the European Central Bank: [Overview of the euro short-term rate (€STR), ECB](https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/eurostr_overview.en.html); the historical daily data are available in the ECB Data Portal. The annual averages used are listed in Notebook 2.
 - **Benchmark.** The Xtrackers EURO STOXX 50 UCITS ETF 1C (`XESC.DE`, Xetra, EUR), an accumulating fund that tracks the EURO STOXX 50 Net Return index. It is used as an investable proxy for the index and labelled "EURO STOXX 50 ETF (net return proxy, EUR)". All nine holdings are members of the EURO STOXX 50.
 - Historical VaR estimates the loss threshold at the 95% confidence level; CVaR estimates the average loss beyond that threshold.
 - VaR backtesting compares observed portfolio losses against the estimated VaR threshold.
@@ -123,20 +129,22 @@ The 95% historical VaR backtest counts the days on which the portfolio's return 
 ## 7. Project Structure
 
 ```text
-Portfolio_Risk_Dashboard/
+portfolio-risk-dashboard/
 ├── data/
 │   ├── adj_close.csv      # stock prices in EUR (created by Notebook 1)
 │   └── benchmark.csv      # EURO STOXX 50 ETF benchmark prices in EUR (created by Notebook 1)
-├── images/
+├── images/                # dashboard screenshots (current files show an earlier project version; to be replaced)
+│   ├── benchmark_analysis.png
+│   ├── covid_stress_test.png
+│   ├── portfolio_overview.png
+│   └── var_backtest_risk_contribution.png
 ├── notebooks/
 │   ├── 01_Download_Data.ipynb
 │   ├── 02_Portfolio_Returns.ipynb
 │   └── 03_Risk_Analysis.ipynb
-├── reports/
 ├── src/
 │   ├── dashboard.py
-│   ├── Open_Dashboard.command
-│   └── pages/
+│   └── Open_Dashboard.command
 ├── README.md
 └── requirements.txt
 ```
@@ -144,7 +152,7 @@ Portfolio_Risk_Dashboard/
 ## 8. How to Run the Dashboard
 
 1. Install Python and the packages listed in `requirements.txt`.
-2. Run `notebooks/01_Download_Data.ipynb` to download the data and create the files in `data/`.
+2. The data files in `data/` are already included in the repository, and the results reported in this README are based on these committed files. Running `notebooks/01_Download_Data.ipynb` again re-downloads the data from Yahoo Finance and overwrites them; because Yahoo Finance can revise historical adjusted prices, a new download may change the reported results.
 3. Open a terminal in the project's `src` directory.
 4. Run:
 
@@ -167,6 +175,9 @@ Keep the terminal session running while using the dashboard.
   - **Gross versus net dividends.** The fund follows the **net** return index (dividends reinvested after withholding tax), whereas the stocks' adjusted prices reinvest dividends **gross**. Together with the fee, this means the benchmark's return is held back relative to the stocks, which slightly flatters the portfolio's relative performance. The size of this gap has not been measured in this project; it is plausibly in the region of half a percentage point a year, but this is an estimate, not an exact figure.
   - Volatility, correlation and beta are essentially unaffected, because a small, steady drag barely changes day-to-day return movements.
   - Yahoo Finance uses the fund's Xetra closing price, which can differ slightly from its official net asset value.
+- Survivorship and selection bias: the nine holdings are large, established companies that are current members of the EURO STOXX 50, selected retrospectively and then applied to historical data from 2019. Companies that underperformed, were removed from the index or ceased to exist over the period could not be chosen. The historical results, including the comparison with the benchmark, are therefore likely to be flattered and should not be read as the outcome of a portfolio chosen in January 2019.
+- VaR backtesting is in-sample: the 95% VaR threshold is estimated from the same returns used to count exceptions, so the observed exception rate (5.01%) is close to 5% by construction and does not demonstrate out-of-sample accuracy.
+- Data reproducibility: the reported results are based on the committed CSV files in `data/`. Re-downloading the data from Yahoo Finance may produce different historical adjusted prices and therefore different results.
 - Concentration: the portfolio holds nine stocks from three countries (France, Germany, the Netherlands), so its results are specific to these companies and to the eurozone large-cap market.
 - Risk-free rate: the constant 1.05% is a full-period approximation of €STR, whose annual average ranged from about −0.57% to 3.64% over 2019–2025. The 2019 observation period is incomplete (October–December only); a full-year pre-€STR estimate gives approximately 1.06%.
 - **Benchmark data-quality note:** We identified three consecutive unchanged-price observations for the EURO STOXX 50 ETF proxy (XESC.DE) on 4–6 December 2023 in the Yahoo Finance historical data. These observations have not been independently verified, so it is not yet known whether they reflect genuine market prices or stale data. They were retained in the main dataset pending verification and may affect benchmark volatility, correlation and beta estimates.
