@@ -154,7 +154,7 @@ rolling_volatility = (
 # ============================================================
 
 # Exception occurs when actual return is worse than VaR
-var_exceptions = portfolio_returns < var_95
+var_exceptions = portfolio_returns <= var_95
 
 exception_count = int(var_exceptions.sum())
 
