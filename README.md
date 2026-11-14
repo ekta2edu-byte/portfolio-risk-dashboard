@@ -133,7 +133,7 @@ portfolio-risk-dashboard/
 ├── data/
 │   ├── adj_close.csv      # stock prices in EUR (created by Notebook 1)
 │   └── benchmark.csv      # EURO STOXX 50 ETF benchmark prices in EUR (created by Notebook 1)
-├── images/                # dashboard screenshots (current files show an earlier project version; to be replaced)
+├── images/  # current dashboard screenshots
 │   ├── benchmark_analysis.png
 │   ├── covid_stress_test.png
 │   ├── portfolio_overview.png
