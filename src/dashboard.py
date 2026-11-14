@@ -164,10 +164,6 @@ exception_rate = (
 
 expected_exception_rate = 0.05
 
-exception_difference = (
-    exception_rate - expected_exception_rate
-)
-
 
 # ============================================================
 # 7. RISK CONTRIBUTION
@@ -480,20 +476,15 @@ col3.metric(
     f"{expected_exception_rate:.2%}"
 )
 
-if abs(exception_difference) < 0.01:
-    st.success(
-        f"The actual exception rate of {exception_rate:.2%} "
-        f"is very close to the expected 5.00% rate. "
-        "This indicates reasonable exception-frequency calibration "
-        "for the historical VaR estimate over the sample period."
-    )
-else:
-    st.warning(
-        f"The actual exception rate of {exception_rate:.2%} "
-        f"differs from the expected 5.00% rate. "
-        "This may indicate that the historical VaR model is not "
-        "fully capturing the portfolio's observed tail risk."
-    )
+st.info(
+    f"There were {exception_count} VaR exceptions out of "
+    f"{len(portfolio_returns):,} daily returns ({exception_rate:.2%}), "
+    f"close to the expected {expected_exception_rate:.2%}. "
+    "Because the VaR threshold is estimated from the same returns used "
+    "to count the exceptions, an exception rate close to 5% is expected "
+    "by construction. This in-sample result therefore does not establish "
+    "the model's predictive accuracy or calibration."
+)
 
 st.caption(
     "Note: this is an in-sample historical VaR backtest. "
